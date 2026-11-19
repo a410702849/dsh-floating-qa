@@ -1,0 +1,59 @@
+{
+  "name": "dsh-floating-qa",
+  "version": "1.0.1",
+  "type": "module",
+  "description": "Pin any question/answer pair as a draggable floating quick-reference list in DeepSeek Harness.",
+  "license": "MIT",
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org",
+    "access": "public"
+  },
+  "author": "hhtt_428",
+  "homepage": "https://gitee.com/hhtt_428/dsh-floating-qa",
+  "repository": {
+    "type": "git",
+    "url": "git+https://gitee.com/hhtt_428/dsh-floating-qa.git"
+  },
+  "bugs": {
+    "url": "https://gitee.com/hhtt_428/dsh-floating-qa/issues"
+  },
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "dsh-bundle",
+    "deepseek-harness",
+    "floating",
+    "qa",
+    "pin"
+  ],
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "cordis.patch.yml",
+    "locale/*.json",
+    "docs",
+    "icon.svg",
+    "README.md",
+    "LICENSE"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-conversation",
+        "@deepseek-ai/dsh-client-ui-chat",
+        "@deepseek-ai/dsh-client-ui-layout"
+      ]
+    }
+  }
+}

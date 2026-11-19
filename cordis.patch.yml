@@ -1,0 +1,3 @@
+- insert:
+    - id: floating-qa
+      name: 'dsh-floating-qa'

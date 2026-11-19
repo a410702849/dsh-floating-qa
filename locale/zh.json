@@ -1,0 +1,7 @@
+{
+  "meta": {
+    "title": "悬浮问答",
+    "description": "把任意一条问答钉在对话界面上，形成可拖拽、可速查的悬浮小列表。",
+    "detail": "docs/DETAIL.md"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "meta": {
+    "title": "Floating Q&A",
+    "description": "Pin any question/answer pair as a draggable floating quick-reference list over the conversation.",
+    "detail": "docs/DETAIL.md"
+  }
+}
