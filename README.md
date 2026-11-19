@@ -1,6 +1,6 @@
 # dsh-floating-qa
 
-<img src="icon.svg" alt="Floating Q&A icon" width="72" height="72" align="right" />
+<img src="https://raw.githubusercontent.com/a410702849/dsh-floating-qa/main/icon.svg" alt="Floating Q&A icon" width="72" height="72" align="right" />
 
 **悬浮问答**：把对话里的任意一条「问题 + 回答」钉到 DSH 对话界面上，形成一个长期悬浮、可拖拽的速查小列表。适合在长会话里反复查阅同一个结论、配置或代码片段。
 

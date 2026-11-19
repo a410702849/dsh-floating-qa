@@ -1,0 +1,16 @@
+{
+  "screenshots": [
+    {
+      "src": "img/pin-button.png",
+      "alt": "助手回答下方的图钉按钮"
+    },
+    {
+      "src": "img/floating-list.png",
+      "alt": "悬浮问答列表，显示问题与回答摘要"
+    },
+    {
+      "src": "img/full-overlay.png",
+      "alt": "点击条目后显示完整问答的遮罩层"
+    }
+  ]
+}

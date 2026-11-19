@@ -41,6 +41,6 @@
 ## 发布信息
 
 - npm 包名：`dsh-floating-qa`
-- 当前版本：`1.0.1`
+- 当前版本：`1.0.2`
 - 许可证：MIT
-- 源码仓库：<https://gitee.com/hhtt_428/dsh-floating-qa>
+- 源码仓库：<https://github.com/a410702849/dsh-floating-qa>

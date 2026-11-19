@@ -1,6 +1,6 @@
 {
   "name": "dsh-floating-qa",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "type": "module",
   "description": "Pin any question/answer pair as a draggable floating quick-reference list in DeepSeek Harness.",
   "license": "MIT",
@@ -9,13 +9,13 @@
     "access": "public"
   },
   "author": "hhtt_428",
-  "homepage": "https://gitee.com/hhtt_428/dsh-floating-qa",
+  "homepage": "https://github.com/a410702849/dsh-floating-qa",
   "repository": {
     "type": "git",
-    "url": "git+https://gitee.com/hhtt_428/dsh-floating-qa.git"
+    "url": "git+https://github.com/a410702849/dsh-floating-qa.git"
   },
   "bugs": {
-    "url": "https://gitee.com/hhtt_428/dsh-floating-qa/issues"
+    "url": "https://github.com/a410702849/dsh-floating-qa/issues"
   },
   "keywords": [
     "dsh",
