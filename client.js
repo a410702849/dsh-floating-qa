@@ -243,7 +243,7 @@ window.__ModuleLoader__.load({
       return blocks;
     }
 
-    function renderMarkdownBlocks(blocks, prefix) {
+    function renderMarkdownBlocks(blocks, prefix, t) {
       return blocks.map((block, index) => {
         const key = prefix + '-' + index;
         if (block.type === 'heading') {
@@ -253,18 +253,16 @@ window.__ModuleLoader__.load({
           return h('p', { key }, ...renderInline(block.text, key));
         }
         if (block.type === 'code') {
-          return h('pre', {
-            key, className: 'dsh-fqa-md-pre', 'data-lang': block.lang || undefined,
-          }, h('code', { className: 'dsh-fqa-md-codeblock' }, block.text));
+          return h(CodeBlock, { key, code: block.text, lang: block.lang, t });
         }
         if (block.type === 'hr') return h('hr', { key });
         if (block.type === 'quote') {
-          return h('blockquote', { key }, ...renderMarkdownBlocks(block.blocks, key));
+          return h('blockquote', { key }, ...renderMarkdownBlocks(block.blocks, key, t));
         }
         if (block.type === 'list') {
           const children = block.items.map((item, itemIndex) => {
             const itemKey = key + '-' + itemIndex;
-            return h('li', { key: itemKey }, ...renderMarkdownBlocks(parseMarkdown(item), itemKey));
+            return h('li', { key: itemKey }, ...renderMarkdownBlocks(parseMarkdown(item), itemKey, t));
           });
           return h(block.ordered ? 'ol' : 'ul', {
             key, start: block.ordered && block.start !== 1 ? block.start : undefined,
@@ -289,10 +287,93 @@ window.__ModuleLoader__.load({
       });
     }
 
-    function MarkdownBody({ text, fallback }) {
+    function copyPlainText(value) {
+      if (typeof navigator !== 'undefined' && navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+        const result = navigator.clipboard.writeText(value);
+        return result && typeof result.then === 'function' ? result : Promise.resolve();
+      }
+      return new Promise((resolve, reject) => {
+        try {
+          const area = document.createElement('textarea');
+          area.value = value;
+          area.setAttribute('readonly', '');
+          area.style.position = 'fixed';
+          area.style.opacity = '0';
+          document.body.appendChild(area);
+          area.select();
+          const ok = document.execCommand('copy');
+          document.body.removeChild(area);
+          if (ok) resolve(); else reject(new Error('copy failed'));
+        } catch (error) {
+          reject(error);
+        }
+      });
+    }
+
+    function CopyGlyph() {
+      return h('svg', { viewBox: '0 0 16 16', fill: 'none', 'aria-hidden': 'true' },
+        h('rect', { x: 5, y: 5, width: 8, height: 8, rx: 1.5, stroke: 'currentColor', strokeWidth: 1.4 }),
+        h('path', { d: 'M3.5 10.5V3.8c0-.7.5-1.2 1.2-1.2h6', stroke: 'currentColor', strokeWidth: 1.4, strokeLinecap: 'round' })
+      );
+    }
+
+    function CheckGlyph() {
+      return h('svg', { viewBox: '0 0 16 16', fill: 'none', 'aria-hidden': 'true' },
+        h('path', { d: 'M3.5 8.4l2.8 2.8 6.2-6.2', stroke: 'currentColor', strokeWidth: 1.6, strokeLinecap: 'round', strokeLinejoin: 'round' })
+      );
+    }
+
+    function WrapGlyph() {
+      return h('svg', { viewBox: '0 0 16 16', fill: 'none', 'aria-hidden': 'true' },
+        h('path', { d: 'M2.5 4.5h11M2.5 8h8a2 2 0 0 1 0 4H4m0 0 1.8-1.8M4 12l1.8 1.8', stroke: 'currentColor', strokeWidth: 1.4, strokeLinecap: 'round', strokeLinejoin: 'round' })
+      );
+    }
+
+    function CodeBlock({ code, lang, t }) {
+      const [wrapped, setWrapped] = useState(false);
+      const [copied, setCopied] = useState(false);
+      const timer = useRef(null);
+      useEffect(() => () => {
+        if (timer.current) window.clearTimeout(timer.current);
+      }, []);
+      const tr = key => (typeof t === 'function' ? t(key) : key);
+      const copy = () => {
+        copyPlainText(code).then(() => {
+          setCopied(true);
+          if (timer.current) window.clearTimeout(timer.current);
+          timer.current = window.setTimeout(() => setCopied(false), 1400);
+        }).catch(() => {});
+      };
+      return h('div', { className: 'dsh-fqa-md-codeblock' },
+        h('div', { className: 'dsh-fqa-md-codebar' },
+          h('span', { className: 'dsh-fqa-md-codelang' }, lang || tr('codeLabel')),
+          h('span', { className: 'dsh-fqa-md-codeactions' },
+            h('button', {
+              type: 'button',
+              className: 'dsh-fqa-md-codebtn' + (wrapped ? ' is-active' : ''),
+              title: tr(wrapped ? 'unwrap' : 'wrap'),
+              'aria-label': tr(wrapped ? 'unwrap' : 'wrap'),
+              'aria-pressed': wrapped,
+              onClick: () => setWrapped(value => !value),
+            }, h(WrapGlyph, null)),
+            h('button', {
+              type: 'button',
+              className: 'dsh-fqa-md-codebtn' + (copied ? ' is-copied' : ''),
+              title: tr(copied ? 'copied' : 'copy'),
+              'aria-label': tr(copied ? 'copied' : 'copy'),
+              onClick: copy,
+            }, copied ? h(CheckGlyph, null) : h(CopyGlyph, null))
+          )
+        ),
+        h('pre', { className: 'dsh-fqa-md-pre' + (wrapped ? ' is-wrapped' : '') },
+          h('code', { className: 'dsh-fqa-md-codeblock-code' }, code))
+      );
+    }
+
+    function MarkdownBody({ text, fallback, t }) {
       const value = text || fallback || '';
       return h('div', { className: 'dsh-fqa-markdown' },
-        ...renderMarkdownBlocks(parseMarkdown(value), 'md'));
+        ...renderMarkdownBlocks(parseMarkdown(value), 'md', t));
     }
 
     const zh = {
@@ -311,7 +392,11 @@ window.__ModuleLoader__.load({
       answer: '回答',
       qBadge: '问',
       aBadge: '答',
-      cancelPin: '取消悬浮',
+      copy: '复制',
+      copied: '已复制',
+      wrap: '自动换行',
+      unwrap: '取消自动换行',
+      codeLabel: '代码',
       noQuestion: '（无问题文本）',
       noAnswer: '（无回答文本）',
       dragHint: '拖动标题栏移动；点击条目查看全文',
@@ -335,7 +420,11 @@ window.__ModuleLoader__.load({
       answer: 'Answer',
       qBadge: 'Q',
       aBadge: 'A',
-      cancelPin: 'Unpin',
+      copy: 'Copy',
+      copied: 'Copied',
+      wrap: 'Wrap lines',
+      unwrap: 'Disable wrapping',
+      codeLabel: 'Code',
       noQuestion: '(No question text)',
       noAnswer: '(No answer text)',
       dragHint: 'Drag the title bar to move; click an item to read it in full',
@@ -756,7 +845,8 @@ window.__ModuleLoader__.load({
       const current = clampPanelPosition(base, headerBottom);
 
       const settings = settingsBySession[sessionId] === true;
-      const setSettings = value => {        setSettingsBySession(previous => {
+      const setSettings = value => {
+        setSettingsBySession(previous => {
           const wasOpen = previous[sessionId] === true;
           const nextOpen = typeof value === 'function' ? value(wasOpen) : value;
           if (nextOpen === wasOpen) return previous;
@@ -1000,25 +1090,17 @@ window.__ModuleLoader__.load({
             h('div', { className: 'dsh-fqa-section dsh-fqa-section-question' },
               h('div', { className: 'dsh-fqa-section-label' }, t('question')),
               h('div', { className: 'dsh-fqa-full' },
-                h(MarkdownBody, { text: openItem.question, fallback: t('noQuestion') })
+                h(MarkdownBody, { text: openItem.question, fallback: t('noQuestion'), t })
               )
             ),
             h('div', { className: 'dsh-fqa-section' },
               h('div', { className: 'dsh-fqa-section-label' }, t('answer')),
               h('div', { className: 'dsh-fqa-full' },
-                h(MarkdownBody, { text: openItem.answer, fallback: t('noAnswer') })
+                h(MarkdownBody, { text: openItem.answer, fallback: t('noAnswer'), t })
               )
             )
           ),
           h('div', { className: 'dsh-fqa-modal-foot' },
-            h('button', {
-              type: 'button',
-              className: 'dsh-fqa-secondary',
-              onClick: () => {
-                remove(sessionId, openItem.id);
-                setOpenId(null);
-              },
-            }, t('cancelPin')),
             h('button', {
               type: 'button',
               className: 'dsh-fqa-primary',
@@ -1400,13 +1482,71 @@ window.__ModuleLoader__.load({
   background: var(--dsw-alias-bg-layer-2, #f1f3f7);
   border: 1px solid var(--dsw-alias-border-l1, rgba(120, 125, 140, .18));
 }
-.dsh-fqa-markdown pre {
+.dsh-fqa-md-codeblock {
   margin: .65em 0;
+  border: 1px solid var(--dsw-alias-border-l1, rgba(120, 125, 140, .18));
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--dsw-alias-bg-layer-2, #f7f8fb);
+}
+.dsh-fqa-md-codebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 28px;
+  padding: 3px 5px 3px 10px;
+  border-bottom: 1px solid var(--dsw-alias-border-l1, rgba(120, 125, 140, .16));
+  background: var(--dsw-alias-bg-layer-1, rgba(255, 255, 255, .5));
+}
+.dsh-fqa-md-codelang {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 10px;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: var(--dsw-alias-label-tertiary, #8a8f98);
+}
+.dsh-fqa-md-codeactions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: none;
+}
+.dsh-fqa-md-codebtn {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--dsw-alias-label-tertiary, #8a8f98);
+  cursor: pointer;
+}
+.dsh-fqa-md-codebtn:hover {
+  color: var(--dsw-alias-label-primary, #202124);
+  background: var(--dsw-alias-interactive-bg-hover, rgba(120, 125, 140, .12));
+}
+.dsh-fqa-md-codebtn.is-active,
+.dsh-fqa-md-codebtn.is-copied {
+  color: var(--dsw-alias-brand-primary, #4167d8);
+}
+.dsh-fqa-md-codebtn svg {
+  width: 14px;
+  height: 14px;
+}
+.dsh-fqa-md-pre {
+  margin: 0;
   padding: 10px 12px;
   overflow: auto;
-  border-radius: 8px;
-  background: var(--dsw-alias-bg-layer-2, #f7f8fb);
-  border: 1px solid var(--dsw-alias-border-l1, rgba(120, 125, 140, .18));
+  border: 0;
+  border-radius: 0;
+  background: transparent;
 }
 .dsh-fqa-markdown pre code {
   padding: 0;
@@ -1417,14 +1557,9 @@ window.__ModuleLoader__.load({
   line-height: 1.55;
   white-space: pre;
 }
-.dsh-fqa-markdown pre[data-lang]::before {
-  content: attr(data-lang);
-  display: block;
-  margin-bottom: 6px;
-  font-size: 10px;
-  letter-spacing: .04em;
-  color: var(--dsw-alias-label-tertiary, #8a8f98);
-  text-transform: uppercase;
+.dsh-fqa-md-pre.is-wrapped code {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 .dsh-fqa-markdown table {
   width: 100%;
@@ -1463,8 +1598,7 @@ window.__ModuleLoader__.load({
   border-top: 1px solid var(--dsw-alias-border-l1, rgba(120, 125, 140, .16));
   background: var(--dsw-alias-bg-layer-2, #f7f8fb);
 }
-.dsh-fqa-primary,
-.dsh-fqa-secondary {
+.dsh-fqa-primary {
   height: 28px;
   padding: 0 12px;
   border-radius: 7px;
@@ -1476,10 +1610,6 @@ window.__ModuleLoader__.load({
   color: #fff;
   background: var(--dsw-alias-button-primary-fill, #4167d8);
   border-color: transparent;
-}
-.dsh-fqa-secondary {
-  color: var(--dsw-alias-label-primary, #202124);
-  background: var(--dsw-alias-bg-base, #fff);
 }
 `;
 
