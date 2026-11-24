@@ -323,14 +323,7 @@ window.__ModuleLoader__.load({
       );
     }
 
-    function WrapGlyph() {
-      return h('svg', { viewBox: '0 0 16 16', fill: 'none', 'aria-hidden': 'true' },
-        h('path', { d: 'M2.5 4.5h11M2.5 8h8a2 2 0 0 1 0 4H4m0 0 1.8-1.8M4 12l1.8 1.8', stroke: 'currentColor', strokeWidth: 1.4, strokeLinecap: 'round', strokeLinejoin: 'round' })
-      );
-    }
-
     function CodeBlock({ code, lang, t }) {
-      const [wrapped, setWrapped] = useState(false);
       const [copied, setCopied] = useState(false);
       const timer = useRef(null);
       useEffect(() => () => {
@@ -350,14 +343,6 @@ window.__ModuleLoader__.load({
           h('span', { className: 'dsh-fqa-md-codeactions' },
             h('button', {
               type: 'button',
-              className: 'dsh-fqa-md-codebtn' + (wrapped ? ' is-active' : ''),
-              title: tr(wrapped ? 'unwrap' : 'wrap'),
-              'aria-label': tr(wrapped ? 'unwrap' : 'wrap'),
-              'aria-pressed': wrapped,
-              onClick: () => setWrapped(value => !value),
-            }, h(WrapGlyph, null)),
-            h('button', {
-              type: 'button',
               className: 'dsh-fqa-md-codebtn' + (copied ? ' is-copied' : ''),
               title: tr(copied ? 'copied' : 'copy'),
               'aria-label': tr(copied ? 'copied' : 'copy'),
@@ -365,7 +350,7 @@ window.__ModuleLoader__.load({
             }, copied ? h(CheckGlyph, null) : h(CopyGlyph, null))
           )
         ),
-        h('pre', { className: 'dsh-fqa-md-pre' + (wrapped ? ' is-wrapped' : '') },
+        h('pre', { className: 'dsh-fqa-md-pre' },
           h('code', { className: 'dsh-fqa-md-codeblock-code' }, code))
       );
     }
@@ -394,8 +379,6 @@ window.__ModuleLoader__.load({
       aBadge: '答',
       copy: '复制',
       copied: '已复制',
-      wrap: '自动换行',
-      unwrap: '取消自动换行',
       codeLabel: '代码',
       noQuestion: '（无问题文本）',
       noAnswer: '（无回答文本）',
@@ -422,8 +405,6 @@ window.__ModuleLoader__.load({
       aBadge: 'A',
       copy: 'Copy',
       copied: 'Copied',
-      wrap: 'Wrap lines',
-      unwrap: 'Disable wrapping',
       codeLabel: 'Code',
       noQuestion: '(No question text)',
       noAnswer: '(No answer text)',
@@ -1532,7 +1513,6 @@ window.__ModuleLoader__.load({
   color: var(--dsw-alias-label-primary, #202124);
   background: var(--dsw-alias-interactive-bg-hover, rgba(120, 125, 140, .12));
 }
-.dsh-fqa-md-codebtn.is-active,
 .dsh-fqa-md-codebtn.is-copied {
   color: var(--dsw-alias-brand-primary, #4167d8);
 }
@@ -1556,10 +1536,6 @@ window.__ModuleLoader__.load({
   font-size: 12px;
   line-height: 1.55;
   white-space: pre;
-}
-.dsh-fqa-md-pre.is-wrapped code {
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
 }
 .dsh-fqa-markdown table {
   width: 100%;
