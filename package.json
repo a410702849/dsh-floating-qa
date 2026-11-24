@@ -1,6 +1,6 @@
 {
   "name": "dsh-floating-qa",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "type": "module",
   "description": "Pin any question/answer pair as a draggable floating quick-reference list in DeepSeek Harness.",
   "license": "MIT",
